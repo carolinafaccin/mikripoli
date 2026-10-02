@@ -10,7 +10,6 @@ from .config import TOWNS
 from .data import town_view
 
 HEAD, FOOT = 1.5, 0.6
-SEQ_OCHRE = ["#CDAA3E", "#A88412", "#7A600D", "#4D3C07"]   # validated ordinal ramp (light-end contrast >= 2:1)
 
 # Variables of the tract maps: column, title, class breaks, labels, colors
 PANELS = [
@@ -19,7 +18,7 @@ PANELS = [
     ("residents_per_dwelling", "Residents per dwelling", [0, 2.5, 3, 3.5, float("inf")],
      ["Under 2.5", "2.5–3", "3–3.5", "3.5 or more"], style.SEQ_GREEN),
     ("income_mw", "Mean income of the household head", [0, 1, 2, 3, float("inf")],
-     ["Under 1 MW", "1–2 MW", "2–3 MW", "3 MW or more"], SEQ_OCHRE),
+     ["Under 1 MW", "1–2 MW", "2–3 MW", "3 MW or more"], style.SEQ_OCHRE),
 ]
 MAIN = ("motorway", "trunk", "primary", "secondary")
 
