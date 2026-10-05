@@ -39,7 +39,7 @@ flowchart LR
 ```bash
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-cp config/config.local.json.example config/config.local.json   # set raw_dir and data_dir
+cp config/config.local.json.example config/config.local.json   # set sources_dir and outputs_dir
 python pipeline.py                               # tables + figures + README images
 pytest                                           # unit tests
 ```
@@ -48,10 +48,10 @@ pytest                                           # unit tests
 
 | Key | Purpose |
 |---|---|
-| `raw_dir` | Shared raw-data catalog. Reads the 2010 tracts from `ibge/censo/2010/setores_censitarios_rs/t0/`, the universe results from `ibge/censo/2010/universo_rs/t0/CSV/Basico_RS.csv` and the water bodies from `_projetos/rio_pardo_enchentes_2024/shp/` |
-| `data_dir` | This project's outputs: `tables/`, `figures/`, `cache/` |
+| `sources_dir` | Shared raw-data catalog. Reads the 2010 tracts from `ibge/censo/2010/setores_censitarios_rs/t0/`, the universe results from `ibge/censo/2010/universo_rs/t0/CSV/Basico_RS.csv` and the water bodies from `_projetos/rio_pardo_enchentes_2024/shp/` |
+| `outputs_dir` | This project's outputs: `tables/`, `figures/`, `cache/` |
 
-## Outputs (`data_dir`)
+## Outputs (`outputs_dir`)
 
 | File | Content |
 |---|---|

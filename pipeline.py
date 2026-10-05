@@ -4,7 +4,7 @@
     python pipeline.py --only tables         # tables
     python pipeline.py --only figures docs   # redraw figures and copy the README ones
 
-Inputs come from raw_dir and outputs go to data_dir, both set in config/config.local.json.
+Inputs come from sources_dir and outputs go to outputs_dir, both set in config/config.local.json.
 """
 import argparse
 import shutil
@@ -18,8 +18,8 @@ from mikripoli import config, data, figures, metrics, style  # noqa: E402
 README_FIGURES = ["map_tracts", "map_neighborhoods"]
 
 
-def run_tables(t, nb, data_dir):
-    out = data_dir / "tables"
+def run_tables(t, nb, outputs_dir):
+    out = outputs_dir / "tables"
     t.drop(columns="geometry").round(3).to_csv(out / "tracts_2010.csv", index=False)
     metrics.by_town(t).round(2).to_csv(out / "towns_2010.csv", index=False)
     metrics.by_neighborhood(t, nb).round(2).to_csv(out / "neighborhoods_2010.csv", index=False)
@@ -29,21 +29,21 @@ def run_tables(t, nb, data_dir):
         print(f"  {r['item']}: published {r['published']}, computed {r['computed']}")
 
 
-def run_figures(t, nb, raw_dir, data_dir):
+def run_figures(t, nb, sources_dir, outputs_dir):
     style.setup()
-    f = data_dir / "figures"
-    streets = {town: data.load_streets(t, town, data_dir) for town in config.TOWNS}
-    water = data.load_water(raw_dir, t, data_dir)
+    f = outputs_dir / "figures"
+    streets = {town: data.load_streets(t, town, outputs_dir) for town in config.TOWNS}
+    water = data.load_water(sources_dir, t, outputs_dir)
     figures.map_tracts(t, streets, water, f / "map_tracts.png")
     figures.map_neighborhoods(nb, streets, water, f / "map_neighborhoods.png")
     print(f"figures written to {f}")
 
 
-def run_docs(data_dir):
+def run_docs(outputs_dir):
     dest = Path(__file__).parent / "docs" / "img"
     dest.mkdir(parents=True, exist_ok=True)
     for name in README_FIGURES:
-        shutil.copy(data_dir / "figures" / f"{name}.png", dest / f"{name}.png")
+        shutil.copy(outputs_dir / "figures" / f"{name}.png", dest / f"{name}.png")
     print(f"copied {len(README_FIGURES)} figures to {dest}")
 
 
@@ -53,16 +53,16 @@ def main():
     args = p.parse_args()
     steps = args.only or ["tables", "figures", "docs"]
 
-    raw_dir, data_dir = config.load()
-    t = data.load_tracts(raw_dir)
+    sources_dir, outputs_dir = config.load()
+    t = data.load_tracts(sources_dir)
     nb = data.neighborhoods(t)
     print(f"{len(t)} census tracts, {len(nb)} urban neighborhoods in {', '.join(config.TOWNS)}")
     if "tables" in steps:
-        run_tables(t, nb, data_dir)
+        run_tables(t, nb, outputs_dir)
     if "figures" in steps:
-        run_figures(t, nb, raw_dir, data_dir)
+        run_figures(t, nb, sources_dir, outputs_dir)
     if "docs" in steps:
-        run_docs(data_dir)
+        run_docs(outputs_dir)
 
 
 if __name__ == "__main__":

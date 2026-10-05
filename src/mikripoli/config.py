@@ -1,7 +1,7 @@
 """Paths: read from config/config.local.json (gitignored), like the other repositories.
 
-- raw_dir   shared raw-data catalog (read only)
-- data_dir  this project's outputs (tables, figures, cache/ for OpenStreetMap downloads)
+- sources_dir   shared raw-data catalog (read only)
+- outputs_dir  this project's outputs (tables, figures, cache/ for OpenStreetMap downloads)
 """
 import json
 from pathlib import Path
@@ -20,14 +20,14 @@ MIN_WAGE_2010 = 510.0
 
 
 def load():
-    """Return (raw_dir, data_dir) as Paths; create data_dir subfolders."""
+    """Return (sources_dir, outputs_dir) as Paths; create outputs_dir subfolders."""
     cfg_path = ROOT / "config" / "config.local.json"
     if not cfg_path.exists():
-        raise SystemExit(f"Missing {cfg_path.name}: copy config/config.local.json.example and set raw_dir and data_dir.")
+        raise SystemExit(f"Missing {cfg_path.name}: copy config/config.local.json.example and set sources_dir and outputs_dir.")
     cfg = json.loads(cfg_path.read_text())
-    raw_dir, data_dir = Path(cfg["raw_dir"]), Path(cfg["data_dir"])
-    if not raw_dir.exists():
-        raise SystemExit(f"raw_dir not found: {raw_dir}")
+    sources_dir, outputs_dir = Path(cfg["sources_dir"]), Path(cfg["outputs_dir"])
+    if not sources_dir.exists():
+        raise SystemExit(f"sources_dir not found: {sources_dir}")
     for sub in ("tables", "figures", "cache"):
-        (data_dir / sub).mkdir(parents=True, exist_ok=True)
-    return raw_dir, data_dir
+        (outputs_dir / sub).mkdir(parents=True, exist_ok=True)
+    return sources_dir, outputs_dir

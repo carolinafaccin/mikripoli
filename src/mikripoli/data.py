@@ -11,12 +11,12 @@ from .config import BASICO, CRS, MIN_WAGE_2010, TOWNS, TRACTS, WATER
 COLUMNS = {"V002": "residents", "V003": "residents_per_dwelling", "V005": "income_head"}
 
 
-def load_tracts(raw_dir):
+def load_tracts(sources_dir):
     codes = ", ".join(f"'{c}'" for c in TOWNS.values())
-    t = gpd.read_file(raw_dir / TRACTS, where=f"CD_GEOCODM IN ({codes})").to_crs(CRS)
+    t = gpd.read_file(sources_dir / TRACTS, where=f"CD_GEOCODM IN ({codes})").to_crs(CRS)
     t = t.rename(columns={"CD_GEOCODI": "tract", "CD_GEOCODM": "cd_mun", "NM_BAIRRO": "neighborhood", "TIPO": "situation"})
     t["town"] = t["cd_mun"].map({v: k for k, v in TOWNS.items()})
-    b = pd.read_csv(raw_dir / BASICO, sep=";", encoding="latin-1", decimal=",", dtype={"Cod_setor": str},
+    b = pd.read_csv(sources_dir / BASICO, sep=";", encoding="latin-1", decimal=",", dtype={"Cod_setor": str},
                     usecols=["Cod_setor", "Cod_municipio", *COLUMNS], low_memory=False)
     b = b[b["Cod_municipio"].astype(str).isin(TOWNS.values())]
     for c in COLUMNS:
@@ -40,20 +40,20 @@ def town_view(t, town, pad=600):
     return (minx - pad, miny - pad, maxx + pad, maxy + pad)
 
 
-def load_water(raw_dir, t, data_dir):
-    cache = data_dir / "cache" / "water.gpkg"
+def load_water(sources_dir, t, outputs_dir):
+    cache = outputs_dir / "cache" / "water.gpkg"
     if cache.exists():
         return gpd.read_file(cache)
     for rel in WATER:
-        if (raw_dir / rel).exists():
-            w = gpd.read_file(raw_dir / rel, bbox=tuple(t.buffer(3000).total_bounds)).to_crs(CRS)[["geometry"]]
+        if (sources_dir / rel).exists():
+            w = gpd.read_file(sources_dir / rel, bbox=tuple(t.buffer(3000).total_bounds)).to_crs(CRS)[["geometry"]]
             w.to_file(cache)
             return w
     return None
 
 
-def load_streets(t, town, data_dir):
-    """OpenStreetMap streets around the town (downloaded once, cached in data_dir/cache)."""
+def load_streets(t, town, outputs_dir):
+    """OpenStreetMap streets around the town (downloaded once, cached in outputs_dir/cache)."""
     w, s, e, n = gpd.GeoSeries([box(*town_view(t, town))], crs=CRS).to_crs(4326).total_bounds
     slug = town.lower().replace(" ", "_")
-    return osm.roads((s - 0.01, w - 0.01, n + 0.01, e + 0.01), data_dir / "cache" / f"osm_{slug}.json", crs=CRS)
+    return osm.roads((s - 0.01, w - 0.01, n + 0.01, e + 0.01), outputs_dir / "cache" / f"osm_{slug}.json", crs=CRS)
